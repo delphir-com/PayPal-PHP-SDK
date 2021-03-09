@@ -11,6 +11,7 @@
 /** @var Plan $createdPlan */
 $createdPlan = require 'UpdatePlan.php';
 
+use PayPal\Api\ApplicationContext;
 use PayPal\Api\Agreement;
 use PayPal\Api\Payer;
 use PayPal\Api\Plan;
@@ -21,9 +22,10 @@ use PayPal\Api\ShippingAddress;
     "name": "Base Agreement",
     "description": "Basic agreement",
     "start_date": "2015-06-17T9:45:04Z",
-    "plan": {
-      "id": "P-1WJ68935LL406420PUTENA2I"
-    },
+    //"plan": {
+    //  "id": "P-1WJ68935LL406420PUTENA2I"
+    //},
+    "plan_id" : "P-1WJ68935LL406420PUTENA2I",
     "payer": {
       "payment_method": "paypal"
     },
@@ -33,6 +35,18 @@ use PayPal\Api\ShippingAddress;
         "state": "CA",
         "postal_code": "95070",
         "country_code": "US"
+    },
+    "application_context": {
+        //"brand_name": "example",
+        //"locale": "en-US",
+        //"shipping_preference": "SET_PROVIDED_ADDRESS",
+        //"user_action": "SUBSCRIBE_NOW",
+        //"payment_method": {
+        //  "payer_selected": "PAYPAL",
+        //  "payee_preferred": "IMMEDIATE_PAYMENT_REQUIRED"
+        //},
+        "return_url": "https://example.com/returnUrl",
+        "cancel_url": "https://example.com/cancelUrl"
     }
 }*/
 $agreement = new Agreement();
@@ -60,6 +74,12 @@ $shippingAddress->setLine1('111 First Street')
     ->setPostalCode('95070')
     ->setCountryCode('US');
 $agreement->setShippingAddress($shippingAddress);
+
+$appContext = new ApplicationContext();
+$appContext
+    ->setReturnUrl("$baseUrl/ExecuteAgreement.php?success=true")
+    ->setCancelUrl("$baseUrl/ExecuteAgreement.php?success=false");
+$agreement->setApplicationContext($appContext);
 
 // For Sample Purposes Only.
 $request = clone $agreement;

@@ -7,6 +7,7 @@ use PayPal\Core\PayPalConstants;
 use PayPal\Rest\ApiContext;
 use PayPal\Transport\PayPalRestCall;
 use PayPal\Validation\ArgumentValidator;
+use PayPal\Validation\UrlValidator;
 
 /**
  * Class Agreement
@@ -20,11 +21,13 @@ use PayPal\Validation\ArgumentValidator;
  * @property string name
  * @property string description
  * @property string start_date
+ * @property \PayPal\Api\ApplicationContext application_context
  * @property \PayPal\Api\Payer payer
  * @property \PayPal\Api\Address shipping_address
  * @property \PayPal\Api\MerchantPreferences override_merchant_preferences
  * @property \PayPal\Api\OverrideChargeModel[] override_charge_models
  * @property \PayPal\Api\Plan plan
+ * @property string plan_id
  * @property string create_time
  * @property string update_time
  * @property \PayPal\Api\AgreementDetails agreement_details
@@ -278,6 +281,7 @@ class Agreement extends PayPalResourceModel
     public function setPlan($plan)
     {
         $this->plan = $plan;
+        $this->plan_id = $plan->getId();
         return $this;
     }
 
@@ -289,6 +293,29 @@ class Agreement extends PayPalResourceModel
     public function getPlan()
     {
         return $this->plan;
+    }
+
+    /**
+     * ApplicationContext details for this agreement.
+     *
+     * @param \PayPal\Api\ApplicationContext $application_context
+     *
+     * @return $this
+     */
+    public function setApplicationContext($application_context)
+    {
+        $this->application_context = $application_context;
+        return $this;
+    }
+
+    /**
+     * ApplicationContext details for this agreement.
+     *
+     * @return \PayPal\Api\ApplicationContext
+     */
+    public function getApplicationContext()
+    {
+        return $this->application_context;
     }
 
     /**
@@ -380,14 +407,18 @@ class Agreement extends PayPalResourceModel
     public function create($apiContext = null, $restCall = null)
     {
         $payLoad = $this->toJSON();
+        \cLog::info($payLoad);
         $json = self::executeCall(
-            "/v1/payments/billing-agreements/",
+            "/v1/billing/subscriptions",
             "POST",
             $payLoad,
             null,
             $apiContext,
             $restCall
         );
+
+        \cLog::info($json);
+
         $this->fromJson($json);
         return $this;
     }
@@ -405,7 +436,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($paymentToken, 'paymentToken');
         $payLoad = "";
         $json = self::executeCall(
-            "/v1/payments/billing-agreements/$paymentToken/agreement-execute",
+            "/v1/billing/subscriptions/$paymentToken/agreement-execute",
             "POST",
             $payLoad,
             null,
@@ -429,7 +460,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($agreementId, 'agreementId');
         $payLoad = "";
         $json = self::executeCall(
-            "/v1/payments/billing-agreements/$agreementId",
+            "/v1/billing/subscriptions/$agreementId",
             "GET",
             $payLoad,
             null,
@@ -455,7 +486,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($patchRequest, 'patchRequest');
         $payLoad = $patchRequest->toJSON();
         self::executeCall(
-            "/v1/payments/billing-agreements/{$this->getId()}",
+            "/v1/billing/subscriptions/{$this->getId()}",
             "PATCH",
             $payLoad,
             null,
@@ -479,7 +510,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($agreementStateDescriptor, 'agreementStateDescriptor');
         $payLoad = $agreementStateDescriptor->toJSON();
         self::executeCall(
-            "/v1/payments/billing-agreements/{$this->getId()}/suspend",
+            "/v1/billing/subscriptions/{$this->getId()}/suspend",
             "POST",
             $payLoad,
             null,
@@ -503,7 +534,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($agreementStateDescriptor, 'agreementStateDescriptor');
         $payLoad = $agreementStateDescriptor->toJSON();
         self::executeCall(
-            "/v1/payments/billing-agreements/{$this->getId()}/re-activate",
+            "/v1/billing/subscriptions/{$this->getId()}/re-activate",
             "POST",
             $payLoad,
             null,
@@ -527,7 +558,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($agreementStateDescriptor, 'agreementStateDescriptor');
         $payLoad = $agreementStateDescriptor->toJSON();
         self::executeCall(
-            "/v1/payments/billing-agreements/{$this->getId()}/cancel",
+            "/v1/billing/subscriptions/{$this->getId()}/cancel",
             "POST",
             $payLoad,
             null,
@@ -551,7 +582,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($agreementStateDescriptor, 'agreementStateDescriptor');
         $payLoad = $agreementStateDescriptor->toJSON();
         self::executeCall(
-            "/v1/payments/billing-agreements/{$this->getId()}/bill-balance",
+            "/v1/billing/subscriptions/{$this->getId()}/bill-balance",
             "POST",
             $payLoad,
             null,
@@ -575,7 +606,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($currency, 'currency');
         $payLoad = $currency->toJSON();
         self::executeCall(
-            "/v1/payments/billing-agreements/{$this->getId()}/set-balance",
+            "/v1/billing/subscriptions/{$this->getId()}/set-balance",
             "POST",
             $payLoad,
             null,
@@ -599,7 +630,7 @@ class Agreement extends PayPalResourceModel
         ArgumentValidator::validate($agreementId, 'agreementId');
         $payLoad = "";
         $json = self::executeCall(
-            "/v1/payments/billing-agreements/$agreementId/transactions",
+            "/v1/billing/subscriptions/$agreementId/transactions",
             "GET",
             $payLoad,
             null,
@@ -632,7 +663,7 @@ class Agreement extends PayPalResourceModel
 
         $payLoad = "";
         $json = self::executeCall(
-            "/v1/payments/billing-agreements/$agreementId/transactions?" . http_build_query(array_intersect_key($params, $allowedParams)),
+            "/v1/billing/subscriptions/$agreementId/transactions?" . http_build_query(array_intersect_key($params, $allowedParams)),
             "GET",
             $payLoad,
             null,
