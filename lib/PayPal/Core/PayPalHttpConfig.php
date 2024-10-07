@@ -283,8 +283,11 @@ class PayPalHttpConfig
      * @param       $prefix
      * @return array
      */
-    public function getHttpConstantsFromConfigs($configs = array(), $prefix)
+    public function getHttpConstantsFromConfigs($configs, $prefix)
     {
+        if ( empty($configs) ) {
+            $configs = array();
+        }
         $arr = array();
         if ($prefix != null && is_array($configs)) {
             foreach ($configs as $k => $v) {
